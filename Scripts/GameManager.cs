@@ -6,15 +6,16 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager Instance; // static reference
+    public static GameManager Instance;
 
-    public GameObject backgroundPanel; // grey background 
+    public GameObject backgroundPanel;
     public GameObject victoryPanel;
     public GameObject losePanel;
 
-    public int goal; // the amount of points you need to get to to win.
-    public int moves; //the number of turns you can take
-    public int points; // the current points you have earned.
+    public int goal;
+    public int moves;
+    public int points;
+    private int lastTurnPoints; // Stores points from the previous turn
 
     public bool isGameEnded;
 
@@ -31,35 +32,57 @@ public class GameManager : MonoBehaviour
     {
         moves = _moves;
         goal = _goal;
+        lastTurnPoints = points; // Initialize lastTurnPoints
     }
 
-    // Update is called once per frame
     void Update()
     {
         pointsTxt.text = "Points: " + points.ToString();
-        movesTxt.text = "Moves: " + moves.ToString();
+        movesTxt.text = "Moves: " + Mathf.Max(0, moves).ToString();
         goalTxt.text = "Goal: " + goal.ToString();
+    }
+
+
+    public void subtractmove(bool _subtractMoves)
+    {
+        if (_subtractMoves) // Only decrease moves if _subtractMoves is true
+        {
+            moves--;
+            Debug.Log("Moves decreased! New moves count: " + moves); // Debugging line
+        }
+
+        // Check if moves reach 0 and trigger the lose screen
+        if (moves <= 0 && !isGameEnded)
+        {
+            isGameEnded = true;
+            backgroundPanel.SetActive(true);
+            losePanel.SetActive(true);
+            PotionBoard.Instance.potionParent.SetActive(false);
+            Debug.Log("Game Over! Moves reached 0."); // Debugging line
+        }
     }
 
     public void ProcessTurn(int _pointsToGain, bool _subtractMoves)
     {
+        if (isGameEnded) return;
+
         points += _pointsToGain;
-        if (_subtractMoves)
-            moves--;
+
+        Debug.Log("ProcessTurn called! Points: " + points + ", Moves: " + moves); // Debugging line
+
+        lastTurnPoints = points; // Update lastTurnPoints for next turn
 
         if (points >= goal)
         {
-            //you've won the game
             isGameEnded = true;
-            //Display a victory screen
             backgroundPanel.SetActive(true);
             victoryPanel.SetActive(true);
             PotionBoard.Instance.potionParent.SetActive(false);
             return;
         }
-        if (moves == 0)
+
+        if (moves <= 0)
         {
-            //lose the game
             isGameEnded = true;
             backgroundPanel.SetActive(true);
             losePanel.SetActive(true);
@@ -67,16 +90,4 @@ public class GameManager : MonoBehaviour
             return;
         }
     }
-
-    //attached to a button to change scene when winning
-    public void WinGame()
-    {
-        SceneManager.LoadScene(0);
-    }
-
-    //attached to a button to change scene when losing
-    public void LoseGame()
-    {
-        SceneManager.LoadScene(0);
-    }
-}
+} 

@@ -44,6 +44,8 @@ public class PotionBoard : MonoBehaviour
         InitializeBoard();
     }
 
+    private int clickCounter = 0; // Tracks the number of clicks
+
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
@@ -57,12 +59,25 @@ public class PotionBoard : MonoBehaviour
                     return;
 
                 Potion potion = hit.collider.gameObject.GetComponent<Potion>();
-                Debug.Log("I have a clicked a potion it is: " + potion.gameObject);
+                Debug.Log("I have clicked a potion it is: " + potion.gameObject);
 
-                SelectPotion(potion);
+                SelectPotion(potion); // Select the potion
+
+                clickCounter++; // Increase click count
+
+                // Call ProcessTurn every 2 clicks
+                if (clickCounter % 2 == 0)
+                {
+                    GameManager.Instance.subtractmove(true); // Example: Adds 5 points and subtracts a move
+                    Debug.Log("ProcessTurn called! Click count: " + clickCounter);
+                }
             }
         }
     }
+
+
+
+
 
     void InitializeBoard()
     {
